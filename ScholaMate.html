@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="theme-color" content="#0B1120"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>ScholaMate</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --navy:#0B1120;--card:#151E2D;--border:#1E2D42;
+  --teal:#0ABFBC;--amber:#F5A623;--violet:#7C5CBF;
+  --mint:#3DDC84;--coral:#FF6B6B;--blue:#3B82F6;
+  --text:#EDF2FF;--sub:#8899AA;--muted:#445566;
+  --ff-display:'Playfair Display',Georgia,serif;
+  --ff-body:'DM Sans',system-ui,sans-serif;
+}
+html,body{height:100%;background:var(--navy);font-family:var(--ff-body);color:var(--text);overflow:hidden;}
+#app{height:100vh;display:flex;flex-direction:column;max-width:430px;margin:0 auto;background:var(--navy);position:relative;overflow:hidden;}
+
+/* scrollable content */
+.screen{flex:1;overflow-y:auto;padding:12px 16px 90px;scrollbar-width:none;}
+.screen::-webkit-scrollbar{display:none;}
+
+/* bottom nav */
+#nav{position:absolute;bottom:0;left:0;right:0;background:rgba(11,17,32,.95);backdrop-filter:blur(24px);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:8px 0 max(12px,env(safe-area-inset-bottom));z-index:100;}
+.nav-btn{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;cursor:pointer;padding:4px 6px;border-radius:10px;transition:.2s;}
+.nav-icon{width:38px;height:28px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;transition:.2s;}
+.nav-label{font-size:9px;font-weight:700;letter-spacing:.5px;color:var(--muted);transition:.2s;}
+.nav-btn.active .nav-icon{background:rgba(10,191,188,.18);box-shadow:0 0 12px rgba(10,191,188,.35);}
+.nav-btn.active .nav-label{color:var(--teal);}
+
+/* header */
+#header{display:flex;justify-content:space-between;align-items:center;padding:10px 16px 0;}
+.logo{font-family:var(--ff-display);font-size:22px;font-weight:900;background:linear-gradient(135deg,var(--teal),var(--mint));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hdr-btns{display:flex;gap:8px;}
+.hdr-btn{width:36px;height:36px;border-radius:10px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;}
+
+/* cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;}
+.card.glow-teal{border-color:rgba(10,191,188,.35);box-shadow:0 0 24px rgba(10,191,188,.1);}
+.card.glow-amber{border-color:rgba(245,166,35,.35);box-shadow:0 0 24px rgba(245,166,35,.1);}
+.card.glow-violet{border-color:rgba(124,92,191,.35);box-shadow:0 0 24px rgba(124,92,191,.1);}
+.card.glow-mint{border-color:rgba(61,220,132,.35);box-shadow:0 0 24px rgba(61,220,132,.1);}
+.card.glow-coral{border-color:rgba(255,107,107,.35);box-shadow:0 0 24px rgba(255,107,107,.1);}
+
+/* badge */
+.badge{display:inline-flex;align-items:center;border-radius:6px;font-size:10px;font-weight:700;padding:2px 8px;letter-spacing:.8px;text-transform:uppercase;}
+
+/* progress bar */
+.pbar-wrap{background:var(--border);border-radius:99px;overflow:hidden;}
+.pbar-fill{border-radius:99px;transition:width 1.2s cubic-bezier(.4,0,.2,1);}
+
+/* section label */
+.sec-lbl{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;}
+
+/* btn */
+.btn{border:none;border-radius:12px;padding:12px 20px;font-weight:700;font-size:13px;cursor:pointer;font-family:var(--ff-body);transition:.15s;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
+.btn-teal{background:var(--teal);color:#000;}
+.btn-teal:active{transform:scale(.97);}
+.btn-ghost{background:var(--card);color:var(--sub);border:1px solid var(--border);}
+.btn-violet{background:var(--violet);color:#fff;}
+.btn-full{width:100%;}
+
+/* tabs */
+.tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;background:var(--card);color:var(--sub);transition:.2s;}
+.tab.active{background:var(--teal);color:#000;border-color:var(--teal);}
+
+/* toast */
+#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(10,191,188,.95);color:#000;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:700;opacity:0;transition:.3s;z-index:999;white-space:nowrap;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* modal */
+#modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:200;display:none;align-items:flex-end;}
+#modal-overlay.open{display:flex;}
+#modal-box{background:#111827;border-radius:24px 24px 0 0;width:100%;max-width:430px;margin:0 auto;padding:20px 20px max(24px,env(safe-area-inset-bottom));max-height:85vh;overflow-y:auto;}
+.modal-handle{width:40px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 16px;}
+
+/* animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes popIn{0%{transform:scale(.8);opacity:0;}100%{transform:scale(1);opacity:1;}}
+.fade-up{animation:fadeUp .4s ease both;}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--mint);animation:pulse 1.5s infinite;}
+
+/* quiz answer btns */
+.ans-btn{width:100%;border:1px solid var(--border);border-radius:12px;padding:14px 16px;text-align:left;cursor:pointer;font-size:13px;font-weight:600;background:var(--card);color:var(--text);font-family:var(--ff-body);transition:.15s;margin-bottom:8px;}
+.ans-btn:hover{border-color:var(--teal);}
+.ans-btn.correct{background:rgba(61,220,132,.15);border-color:var(--mint);color:var(--mint);}
+.ans-btn.wrong{background:rgba(255,107,107,.15);border-color:var(--coral);color:var(--coral);}
+
+/* collab canvas */
+#collab-canvas{width:100%;height:220px;background:#0d1525;border-radius:14px;border:1px solid var(--border);cursor:crosshair;touch-action:none;}
+
+/* input */
+.inp{width:100%;background:var(--navy);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-family:var(--ff-body);font-size:13px;outline:none;}
+.inp:focus{border-color:var(--teal);}
+
+/* select */
+.sel{width:100%;background:var(--navy);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-family:var(--ff-body);font-size:13px;outline:none;appearance:none;}
+
+/* toggle */
+.toggle{width:44px;height:24px;border-radius:99px;background:var(--teal);position:relative;cursor:pointer;transition:.2s;}
+.toggle::after{content:'';position:absolute;right:4px;top:4px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s;}
+.toggle.off{background:var(--border);}
+.toggle.off::after{right:auto;left:4px;}
+
+/* video grid */
+.vid-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.vid-cell{aspect-ratio:4/3;background:#0d1525;border-radius:12px;border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;position:relative;overflow:hidden;}
+.vid-cell .avatar{font-size:32px;}
+.vid-cell .vname{font-size:10px;font-weight:700;color:var(--sub);}
+.vid-cell.speaking{border-color:var(--mint);box-shadow:0 0 12px rgba(61,220,132,.3);}
+.vid-bar{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.7));padding:6px 8px;font-size:10px;font-weight:600;}
+
+/* live quiz leaderboard */
+.lb-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.lb-rank{width:24px;height:24px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;}
+
+/* collab cursor */
+.cursor{position:absolute;pointer-events:none;font-size:18px;transition:all .1s;}
+
+/* grade chart */
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:80px;}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.bar{width:100%;border-radius:4px 4px 0 0;transition:height .8s cubic-bezier(.4,0,.2,1);}
+.bar-lbl{font-size:9px;color:var(--muted);}
+.bar-val{font-size:9px;font-weight:700;}
+
+/* flashcard flip */
+.fc-scene{perspective:600px;height:160px;}
+.fc-card{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .5s;}
+.fc-card.flipped{transform:rotateY(180deg);}
+.fc-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:16px;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;}
+.fc-front{background:linear-gradient(135deg,#0B2240,#0d1a2e);border:1px solid rgba(10,191,188,.3);}
+.fc-back{background:linear-gradient(135deg,#1a0b2e,#0d1025);border:1px solid rgba(124,92,191,.3);transform:rotateY(180deg);}
+
+/* responsive for desktop */
+@media(min-width:500px){
+  #app{border-radius:40px;margin:16px auto;height:calc(100vh - 32px);box-shadow:0 40px 100px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.06);}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- STATUS BAR -->
+  <div style="display:flex;justify-content:space-between;padding:10px 20px 4px;font-size:11px;color:var(--muted);font-weight:700;">
+    <span id="clock">9:41</span>
+    <div style="width:80px;height:20px;background:#000;border-radius:20px;position:absolute;left:50%;transform:translateX(-50%);top:6px;"></div>
+    <span>●●● 5G 🔋</span>
+  </div>
+
+  <!-- HEADER -->
+  <div id="header">
+    <div class="logo">ScholaMate</div>
+    <div class="hdr-btns">
+      <div class="hdr-btn" onclick="showToast('🔔 3 new notifications')">🔔</div>
+      <div class="hdr-btn" onclick="openModal('profile')" style="background:rgba(10,191,188,.15);border-color:rgba(10,191,188,.3);">🧑‍🎓</div>
+    </div>
+  </div>
+
+  <!-- SCREENS -->
+  <div class="screen" id="screen-home"></div>
+  <div class="screen" id="screen-notes" style="display:none"></div>
+  <div class="screen" id="screen-quiz" style="display:none"></div>
+  <div class="screen" id="screen-planner" style="display:none"></div>
+  <div class="screen" id="screen-room" style="display:none"></div>
+  <div class="screen" id="screen-grades" style="display:none"></div>
+
+  <!-- BOTTOM NAV -->
+  <nav id="nav">
+    <button class="nav-btn active" onclick="navigate('home',this)">
+      <div class="nav-icon">⊞</div><div class="nav-label">Home</div>
+    </button>
+    <button class="nav-btn" onclick="navigate('notes',this)">
+      <div class="nav-icon">✎</div><div class="nav-label">Notes</div>
+    </button>
+    <button class="nav-btn" onclick="navigate('quiz',this)">
+      <div class="nav-icon">⚡</div><div class="nav-label">QuizMe</div>
+    </button>
+    <button class="nav-btn" onclick="navigate('planner',this)">
+      <div class="nav-icon">◫</div><div class="nav-label">Planner</div>
+    </button>
+    <button class="nav-btn" onclick="navigate('room',this)">
+      <div class="nav-icon">⬡</div><div class="nav-label">Study Room</div>
+    </button>
+    <button class="nav-btn" onclick="navigate('grades',this)">
+      <div class="nav-icon">◈</div><div class="nav-label">Grades</div>
+    </button>
+  </nav>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- MODAL -->
+<div id="modal-overlay" onclick="closeModal()">
+  <div id="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────
+const state={
+  screen:'home',
+  quizStage:'upload', // upload|config|taking|result
+  quizType:'multiple',
+  quizDifficulty:'medium',
+  quizTimer:30,
+  quizCount:10,
+  currentQ:0,
+  score:0,
+  selectedAns:null,
+  streak:6,
+  xp:2340,
+  tasks:[
+    {id:1,text:'Read Ch.8 Organic Chemistry',done:false,priority:'high',due:'8:00 AM',color:'coral'},
+    {id:2,text:'Calculus Problem Set #5',done:false,priority:'high',due:'11:59 PM',color:'coral'},
+    {id:3,text:'Review Cold War Notes',done:true,priority:'med',due:'3:00 PM',color:'amber'},
+    {id:4,text:'Data Structures Lab Report',done:false,priority:'med',due:'5:00 PM',color:'amber'},
+    {id:5,text:'Quizlet review — Biology terms',done:true,priority:'low',due:'Any time',color:'mint'},
+  ],
+  grades:[
+    {sub:'Organic Chemistry',grade:'A-',gpa:3.7,color:'teal',trend:'+0.3',scores:[72,78,85,88,91]},
+    {sub:'Calculus III',grade:'B+',gpa:3.3,color:'amber',trend:'-0.1',scores:[80,75,82,79,83]},
+    {sub:'World History',grade:'A',gpa:4.0,color:'violet',trend:'+0.4',scores:[88,90,92,95,98]},
+    {sub:'Data Structures',grade:'B',gpa:3.0,color:'mint',trend:'+0.1',scores:[65,70,72,75,78]},
+  ],
+  roomPhase:'lobby', // lobby|call|collab|livequiz
+  collabTool:'draw',
+  drawColor:'#0ABFBC',
+  isDrawing:false,
+  liveQuizQ:0,
+  liveAnswered:false,
+  liveScores:{Alex:180,Maria:160,Jae:140,Priya:120},
+  fcIndex:0,
+  fcFlipped:false,
+};
+
+const questions=[
+  {q:'What type of reaction is SN2?',opts:['Radical substitution','Concerted bimolecular nucleophilic','Electrophilic addition','Elimination'],correct:1,exp:'SN2 is a concerted bimolecular mechanism where bond breaking and forming happen simultaneously with backside attack.'},
+  {q:'Which factor most affects SN2 reaction rate?',opts:['Temperature only','Solvent polarity','Steric hindrance of substrate','Nucleophile charge'],correct:2,exp:'Steric hindrance directly blocks backside attack, drastically slowing SN2 reactions.'},
+  {q:'SN2 reactions result in:',opts:['Retention of configuration','Racemization','Inversion of configuration','No stereochemical change'],correct:2,exp:'The backside attack causes a Walden inversion — complete inversion of stereochemistry at the chiral center.'},
+  {q:'Which substrate reacts fastest in SN2?',opts:['Tertiary alkyl halide','Secondary alkyl halide','Primary alkyl halide','Neopentyl halide'],correct:2,exp:'Primary substrates have the least steric hindrance, allowing easiest backside attack.'},
+  {q:'SN2 requires a good:',opts:['Electrophile','Leaving group only','Nucleophile and leaving group','Carbocation'],correct:2,exp:'Both a strong nucleophile and good leaving group are required for SN2 to proceed efficiently.'},
+];
+
+const tfQuestions=[
+  {q:'SN2 reactions proceed through a carbocation intermediate.',ans:false,exp:'SN2 is concerted — no carbocation intermediate forms.'},
+  {q:'Primary substrates favor SN2 over SN1.',ans:true,exp:'Less steric hindrance on primary substrates makes SN2 favorable.'},
+  {q:'SN2 reactions always invert stereochemistry.',ans:true,exp:'Backside attack mechanism causes Walden inversion.'},
+];
+
+const fillQuestions=[
+  {q:'SN2 stands for _______ Nucleophilic Substitution.',ans:'Bimolecular',exp:'Bimolecular refers to the second-order kinetics — rate depends on both nucleophile and substrate.'},
+  {q:'The leaving group in SN2 departs from the _______ side.',ans:'same',exp:'The nucleophile attacks from the back while the leaving group leaves from the front (same side).'},
+];
+
+const flashcards=[
+  {front:'What is SN2?',back:'Substitution Nucleophilic Bimolecular — concerted, single-step mechanism with backside attack.'},
+  {front:'Walden Inversion',back:'Complete inversion of stereochemistry at the carbon center during SN2 reactions.'},
+  {front:'Best substrate for SN2?',back:'Primary alkyl halides — minimal steric hindrance allows easy backside attack.'},
+  {front:'Rate law for SN2',back:'Rate = k[substrate][nucleophile] — second order, depends on both reactants.'},
+  {front:'SN2 solvent preference',back:'Polar aprotic solvents (DMSO, acetone) — dissolve salts without solvating nucleophile.'},
+];
+
+// ─── UTILS ───────────────────────────────────────────────
+function $(id){return document.getElementById(id);}
+function showToast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function openModal(type){
+  $('modal-overlay').classList.add('open');
+  const c=$('modal-content');
+  if(type==='profile') c.innerHTML=renderProfile();
+  if(type==='addTask') c.innerHTML=renderAddTask();
+  if(type==='newNote') c.innerHTML=renderNewNote();
+  if(type==='quizConfig') c.innerHTML=renderQuizConfigModal();
+}
+function closeModal(){$('modal-overlay').classList.remove('open');}
+
+function navigate(sc,btn){
+  document.querySelectorAll('.screen').forEach(s=>s.style.display='none');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  $('screen-'+sc).style.display='block';
+  btn.classList.add('active');
+  state.screen=sc;
+  render(sc);
+}
+
+function render(sc){
+  const renders={home:renderHome,notes:renderNotes,quiz:renderQuiz,planner:renderPlanner,room:renderRoom,grades:renderGrades};
+  if(renders[sc]) $('screen-'+sc).innerHTML=renders[sc]();
+  if(sc==='room'&&state.roomPhase==='collab') setTimeout(initCanvas,100);
+  if(sc==='room'&&state.roomPhase==='call') setTimeout(simulateSpeaking,1000);
+}
+
+// update clock
+setInterval(()=>{
+  const now=new Date();
+  $('clock').textContent=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+},1000);
+
+// ─── HOME ────────────────────────────────────────────────
+function renderHome(){
+  const subjects=[
+    {name:'Organic Chemistry',pct:74,color:'teal',next:'Exam in 3 days'},
+    {name:'Calculus III',pct:58,color:'amber',next:'Quiz tomorrow'},
+    {name:'World History',pct:91,color:'violet',next:'Essay due Fri'},
+    {name:'Data Structures',pct:42,color:'mint',next:'Lab tonight'},
+  ];
+  const sched=[
+    {time:'8:00 AM',title:'Organic Chemistry Lecture',tag:'Class',color:'teal'},
+    {time:'11:00 AM',title:'Calculus III Quiz',tag:'Exam',color:'coral'},
+    {time:'2:00 PM',title:'Study Room — Chem Group',tag:'Group',color:'violet'},
+    {time:'5:00 PM',title:'Review Data Structures PDF',tag:'Self-Study',color:'amber'},
+  ];
+  const flames=Array.from({length:7},(_,i)=>i<state.streak?'🔥':'<span style="opacity:.25">🔥</span>').join('');
+  return `
+  <div class="fade-up" style="display:flex;flex-direction:column;gap:14px;">
+    <!-- Hero -->
+    <div style="background:linear-gradient(135deg,#0B2240,#0B1120);border:1px solid rgba(10,191,188,.25);border-radius:20px;padding:20px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:var(--teal);border-radius:50%;opacity:.06;filter:blur(20px);"></div>
+      <div style="font-size:11px;color:var(--sub);margin-bottom:3px;">Good morning ✦ Sunday, May 3</div>
+      <div style="font-family:var(--ff-display);font-size:22px;font-weight:900;">Alex Rivera 👋</div>
+      <div style="font-size:12px;color:var(--teal);margin-top:5px;">🎯 You're 82% through Week 9 — keep it up!</div>
+      <div style="display:flex;align-items:center;gap:4px;margin-top:12px;">
+        ${flames}
+        <span style="font-size:11px;color:var(--amber);font-weight:700;margin-left:6px;">${state.streak}-day streak 🔥</span>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
+        <div style="height:5px;flex:1;background:rgba(10,191,188,.15);border-radius:99px;overflow:hidden;"><div style="width:${state.xp/50}%;height:100%;background:var(--teal);border-radius:99px;"></div></div>
+        <span style="font-size:10px;color:var(--teal);font-weight:700;">${state.xp} XP</span>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+      ${[['✎','47','Notes','teal'],['⚡','23','Quizzes','amber'],['◈','3.75','GPA','mint']].map(([ic,v,l,c])=>`
+      <div class="card glow-${c}" style="text-align:center;padding:14px 8px;">
+        <div style="font-size:18px;">${ic}</div>
+        <div style="font-family:var(--ff-display);font-size:22px;font-weight:900;color:var(--${c});">${v}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px;">${l}</div>
+      </div>`).join('')}
+    </div>
+
+    <!-- AI Nudge -->
+    <div class="card" style="background:rgba(124,92,191,.12);border-color:rgba(124,92,191,.3);">
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div style="font-size:24px;">🤖</div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--violet);margin-bottom:3px;">AI Study Nudge</div>
+          <div style="font-size:12px;color:var(--sub);line-height:1.5;">You have a Calculus quiz in <strong style="color:var(--amber)">18 hours</strong>. Last score: 64%. Recommend a 45-min review session tonight.</div>
+          <button class="btn btn-violet" style="margin-top:10px;padding:8px 16px;font-size:11px;" onclick="navigate('quiz',document.querySelectorAll('.nav-btn')[2])">Start Review ⚡</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Today's schedule -->
+    <div class="card">
+      <div class="sec-lbl">TODAY'S SCHEDULE</div>
+      ${sched.map((ev,i)=>`
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;${i<3?'border-bottom:1px solid var(--border)':''}">
+        <div style="width:3px;height:38px;background:var(--${ev.color});border-radius:99px;box-shadow:0 0 8px var(--${ev.color});flex-shrink:0;"></div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:600;">${ev.title}</div>
+          <div style="font-size:11px;color:var(--sub);">${ev.time}</div>
+        </div>
+        <span class="badge" style="background:rgba(var(--${ev.color}-rgb),.15);color:var(--${ev.color});border:1px solid rgba(var(--${ev.color}-rgb),.3);">${ev.tag}</span>
+      </div>`).join('')}
+    </div>
+
+    <!-- Subject mastery -->
+    <div class="card">
+      <div class="sec-lbl">SUBJECT MASTERY</div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        ${subjects.map(s=>`
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+            <span style="font-size:13px;font-weight:600;">${s.name}</span>
+            <span style="font-size:12px;font-weight:700;color:var(--${s.color});">${s.pct}%</span>
+          </div>
+          <div class="pbar-wrap" style="height:6px;"><div class="pbar-fill" style="width:${s.pct}%;height:6px;background:var(--${s.color});box-shadow:0 0 8px var(--${s.color});"></div></div>
+          <div style="font-size:10px;color:var(--muted);margin-top:3px;">⏰ ${s.next}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      ${[['⚡','Quiz from PDF','teal','quiz'],['⬡','Study Room','violet','room'],['🃏','Flashcards','amber','notes'],['◈','Track Grades','mint','grades']].map(([ic,lbl,c,sc])=>`
+      <button onclick="navigate('${sc}',document.querySelectorAll('.nav-btn')[${['home','notes','quiz','planner','room','grades'].indexOf(sc)}])" style="background:rgba(var(--${c}-rgb),.1);border:1px solid rgba(var(--${c}-rgb),.25);border-radius:14px;padding:16px 12px;cursor:pointer;text-align:left;transition:.2s;">
+        <div style="font-size:22px;margin-bottom:6px;">${ic}</div>
+        <div style="font-size:12px;font-weight:700;color:var(--${c});">${lbl}</div>
+      </button>`).join('')}
+    </div>
+
+    <!-- Global ticker -->
+    <div class="card" style="padding:12px 16px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="live-dot"></span>
+        <span style="font-size:11px;color:var(--mint);font-weight:700;">LIVE — 1,247 students studying now</span>
+      </div>
+      <div style="font-size:11px;color:var(--sub);margin-top:6px;">🇵🇭 A student in Manila just scored 94% on Biochemistry · 🇧🇷 São Paulo group finished a Calc session</div>
+    </div>
+  </div>`;
+}
+
+// ─── NOTES ───────────────────────────────────────────────
+function renderNotes(){
+  const notes=[
+    {sub:'Organic Chemistry',title:'Nucleophilic Substitution Reactions',date:'Today',color:'teal',pages:8,fc:14},
+    {sub:'Calculus III',title:'Triple Integrals & Volume',date:'Yesterday',color:'amber',pages:5,fc:9},
+    {sub:'World History',title:'Cold War & Proxy Conflicts',date:'Mon',color:'violet',pages:12,fc:21},
+    {sub:'Data Structures',title:'Binary Trees & AVL Rotations',date:'Sun',color:'mint',pages:6,fc:11},
+  ];
+  return `
+  <div class="fade-up" style="display:flex;flex-direction:column;gap:14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-family:var(--ff-display);font-size:20px;font-weight:900;">My Notes</div>
+      <button class="btn btn-teal" style="padding:8px 14px;font-size:11px;" onclick="openModal('newNote')">+ New Note</button>
+    </div>
+
+    <div class="tabs">
+      ${['All','Chemistry','Math','History','CS'].map((t,i)=>`<button class="tab ${i===0?'active':''}" onclick="activateTab(this,'.tabs')">${t}</button>`).join('')}
+    </div>
+
+    <!-- Flashcard preview -->
+    <div>
+      <div class="sec-lbl">TODAY'S FLASHCARD</div>
+      <div class="fc-scene" id="fc-scene" onclick="flipCard()">
+        <div class="fc-card ${state.fcFlipped?'flipped':''}" id="fc-card">
+          <div class="fc-face fc-front">
+            <div>
+              <div style="font-size:10px;color:var(--teal);font-weight:700;margin-bottom:8px;">TAP TO FLIP ↻</div>
+              <div style="font-size:16px;font-weight:700;">${flashcards[state.fcIndex].front}</div>
+            </div>
+          </div>
+          <div class="fc-face fc-back" style="background:linear-gradient(135deg,rgba(124,92,191,.2),rgba(11,17,32,1));">
+            <div>
+              <div style="font-size:10px;color:var(--violet);font-weight:700;margin-bottom:8px;">ANSWER</div>
+              <div style="font-size:14px;color:var(--sub);line-height:1.5;">${flashcards[state.fcIndex].back}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:center;gap:12px;margin-top:10px;">
+        <button onclick="nextFlashcard(-1)" class="btn btn-ghost" style="padding:8px 20px;font-size:12px;">← Prev</button>
+        <span style="font-size:11px;color:var(--muted);align-self:center;">${state.fcIndex+1}/${flashcards.length}</span>
+        <button onclick="nextFlashcard(1)" class="btn btn-teal" style="padding:8px 20px;font-size:12px;">Next →</button>
+      </div>
+    </div>
+
+    ${notes.map(n=>`
+    <div class="card glow-${n.color}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div style="flex:1;">
+          <div style="display:flex;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
+            <span class="badge" style="color:var(--${n.color});background:rgba(var(--${n.color}-rgb),.15);border:1px solid rgba(var(--${n.color}-rgb),.3);">${n.sub}</span>
+            <span style="font-size:10px;color:var(--muted);align-self:center;">${n.date}</span>
+          </div>
+          <div style="font-size:14px;font-weight:700;margin-bottom:8px;">${n.title}</div>
+          <div style="display:flex;gap:14px;">
+            <span style="font-size:11px;color:var(--sub);">📄 ${n.pages} pages</span>
+            <span style="font-size:11px;color:var(--${n.color});">🃏 ${n.fc} flashcards</span>
+          </div>
+        </div>
+        <button class="btn" style="background:rgba(var(--${n.color}-rgb),.15);color:var(--${n.color});border:1px solid rgba(var(--${n.color}-rgb),.3);padding:8px 12px;font-size:11px;margin-left:10px;" onclick="navigate('quiz',document.querySelectorAll('.nav-btn')[2])">⚡ Quiz</button>
+      </div>
+    </div>`).join('')}
+
+    <!-- AI Summarizer -->
+    <div class="card" style="background:rgba(124,92,191,.1);border-color:rgba(124,92,191,.3);">
+      <div style="font-size:13px;font-weight:700;margin-bottom:6px;">🤖 AI Summarizer</div>
+      <textarea class="inp" rows="3" placeholder="Paste any text, notes, or article here…" style="resize:none;"></textarea>
+      <button class="btn btn-violet btn-full" style="margin-top:10px;" onclick="showToast('✨ Summary generated! 5 key points extracted.')">Summarize & Generate Flashcards</button>
+    </div>
+  </div>`;
+}
+
+function flipCard(){
+  state.fcFlipped=!state.fcFlipped;
+  const c=$('fc-card');
+  if(c) c.classList.toggle('flipped');
+}
+function nextFlashcard(dir){
+  state.fcIndex=(state.fcIndex+dir+flashcards.length)%flashcards.length;
+  state.fcFlipped=false;
+  render('notes');
+}
+
+// ─── QUIZ ────────────────────────────────────────────────
+function renderQuiz(){
+  if(state.quizStage==='upload') return renderQuizUpload();
+  if(state.quizStage==='config') return renderQuizConfig();
+  if(state.quizStage==='taking') return renderQuizTaking();
+  if(state.quizStage==='result') return renderQuizResult();
+}
+
+function renderQuizUpload(){return `
+  <div class="fade-up" style="display:flex;flex-direction:column;gap:14px;">
+    <div style="font-family:var(--ff-display);font-size:20px;font-weight:900;">⚡ QuizMe from PDF</div>
+
+    <div style="border:2px dashed rgba(10,191,188,.4);border-radius:20px;padding:36px 20px;text-align:center;background:rgba(10,191,188,.04);" onclick="goConfig()">
+      <div style="font-size:48px;margin-bottom:10px;">📄</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:6px;">Drop your PDF here</div>
+      <div style="font-size:12px;color:var(--sub);margin-bottom:18px;">Textbooks · Lecture slides · Notes · Past exams</div>
+      <button class="btn btn-teal" onclick="goConfig()">Upload PDF →</button>
+    </div>
+
+    <div class="card">
+      <div class="sec-lbl">QUIZ TYPE — CHOOSE ONE</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        ${[['multiple','Multiple Choice','🔘'],['truefalse','True / False','✅'],['fill','Fill in the Blank','✏️'],['short','Short Answer','💬'],['match','Matching Type','🔗'],['order','Sequencing','🔢'],['essay','Essay Prompt','📝'],['adaptive','Adaptive AI','🧠']].map(([v,l,ic])=>`
+        <button onclick="selectQuizType('${v}',this)" style="background:${state.quizType===v?'rgba(10,191,188,.2)':'var(--navy)'};border:1px solid ${state.quizType===v?'var(--teal)':'var(--border)'};border-radius:10px;padding:10px;cursor:pointer;text-align:left;transition:.2s;">
+          <div style="font-size:16px;margin-bottom:4px;">${ic}</div>
+          <div style="font-size:11px;font-weight:700;color:${state.quizType===v?'var(--teal)':'var(--sub)'};">${l}</div>
+        </button>`).join('')}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec-lbl">HOW IT WORKS</div>
+      ${[['📄','Upload any PDF or paste text','teal'],['🤖','AI reads & maps key concepts','violet'],['⚡','Instant quiz in your chosen format','amber'],['🃏','Wrong answers → auto flashcards','coral'],['📊','Track scores & growth over time','mint']].map(([ic,s,c],i,a)=>`
+      <div style="display:flex;gap:12px;align-items:center;padding:9px 0;${i<a.length-1?'border-bottom:1px solid var(--border)':''}">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(var(--${c}-rgb),.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">${ic}</div>
+        <div style="font-size:13px;color:var(--text);">${s}</div>
+      </div>`).join('')}
+    </div>
+  </div>`;}
+
+function selectQuizType(v,btn){state.quizType=v;render('quiz');}
+function goConfig(){state.quizStage='config';render('quiz');}
+
+function renderQuizConfig(){
+  const typeLabel={multiple:'Multiple Choice',truefalse:'True / False',fill:'Fill in the Blank',short:'Short Answer',match:'Matching Type',order:'Sequencing',essay:'Essay Prompt',adaptive:'Adaptive AI'}[state.quizType];
+  return `
+  <div class="fade-up" style="display:flex;flex-direction:column;gap:14px;">
+    <div style="font-family:var(--ff-display);font-size:20px;font-weight:900;">Configure Quiz</div>
+
+    <div class="card glow-teal">
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:14px;">
+        <div style="font-size:36px;">📄</div>
+        <div>
+          <div style="font-size:14px;font-weight:700;">OrganicChem_Chapter7.pdf</div>
+          <div style="font-size:11px;color:var(--teal);">✓ 42 pages · 8,240 words analyzed</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">QUIZ TYPE</div>
+        <div style="background:rgba(10,191,188,.15);border:1px solid rgba(10,191,188,.3);border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;color:var(--teal);">⚡ ${typeLabel}</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">QUESTIONS</div>
+          <select class="sel" onchange="state.quizCount=parseInt(this.value)">
+            <option value="5">5 Questions</option>
+            <option value="10" selected>10 Questions</option>
+            <option value="20">20 Questions</option>
+            <option value="50">50 Questions</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">DIFFICULTY</div>
+          <select class="sel" onchange="state.quizDifficulty=this.value">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+            <option value="adaptive">Adaptive</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">TIMER</div>
+          <select class="sel" onchange="state.quizTimer=parseInt(this.value)">
+            <option value="0">No Timer</option>
+            <option value="15">15 sec/Q</option>
+            <option value="30" selected>30 sec/Q</option>
+            <option value="60">60 sec/Q</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">SCOPE</div>
+          <select class="sel">
+            <option>Full Document</option>
+            <option>Pages 1–20</option>
+            <option>Pages 20–42</option>
+            <option>Weak Topics</option>
+          </select>
+        </div>
+      </div>
+
+      ${[['Shuffle Questions','on'],['Show Hints','on'],['Exam Mode','off'],['Auto-Flashcards','on']].map(([l,def])=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-top:1px solid var(--border);">
+        <span style="font-size:13px;">${l}</span>
+        <div class="toggle ${def==='off'?'off':''}" onclick="this.classList.toggle('off')"></div>
+      </div>`).join('')}
+    </div>
+
+    <button class="btn btn-teal btn-full" style="padding:16px;font-size:15px;" onclick="startQuiz()">⚡ Generate Quiz Now</button>
+    <button class="btn btn-ghost btn-full" onclick="state.quizStage='upload';render('quiz')">← Change Type</button>
+  </div>`;}
+
+let quizTimer=null;
+let timerVal=30;
+
+function startQuiz(){
+  state.quizStage='taking';
+  state.currentQ=0;
+  state.score=0;
+  state.selectedAns=null;
+  render('quiz');
+  if(state.quizTimer>0) startTimer();
+}
+
+function startTimer(){
+  clearInterval(quizTimer);
+  timerVal=state.quizTimer;
+  updateTimerUI();
+  quizTimer=setInterval(()=>{
+    timerVal--;
+    updateTimerUI();
+    if(timerVal<=0){clearInterval(quizTimer);autoAnswer();}
+  },1000);
+}
+
+function updateTimerUI(){
+  const el=$('quiz-timer');
+  if(el){
+    const pct=(timerVal/state.quizTimer)*100;
+    el.textContent=timerVal+'s';
+    el.style.color=timerVal<=10?'var(--coral)':timerVal<=20?'var(--amber)':'var(--mint)';
+    const ring=$('timer-ring');
+    if(ring) ring.style.background=`conic-gradient(${timerVal<=10?'var(--coral)':timerVal<=20?'var(--amber)':'var(--teal)'} ${pct*3.6}deg, var(--border) 0deg)`;
+  }
+}
+
+function autoAnswer(){
+  if(state.selectedAns===null){
+    selectAnswer(-1);
+  }
+}
+
+function getCurrentQData(){
+  if(state.quizType==='truefalse') return null;
+  if(state.quizType==='fill') return null;
+  return questions[state.currentQ % questions.length];
+}
+
+function renderQuizTaking(){
+  const qIdx=state.currentQ % questions.length;
+  const total=Math.min(state.quizCount,questions.length);
+  const pct=(state.currentQ/total)*100;
+
+  if(state.quizType==='truefalse'){
+    const q=tfQuestions[state.currentQ % tfQuestions.length];
+    return `
+    <div class="fade-up" style="display:flex;flex-direction:column;gap:14px;">
+      ${quizHeader(state.currentQ+1,total,pct)}
+      <div class="card glow-teal" style="min-height:100px;">
+        <div style="font-size:10px;color:var(--teal);font-weight:700;letter-spacing:1px;margin-bottom:10px;">TRUE OR FALSE</div>
+        <div style="font-size:16px;font-weight:700;line-height:1.5;">${q.q}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <button class="ans-btn ${state.selectedAns==='true'?(q.ans?'correct':'wrong'):''}" style="text-align:center;padding:24px;font-size:22px;" onclick="selectTFAnswer(true)">✅<br><span style="font-size:13px;margin-top:6px;display:block;">TRUE</span></button>
+        <button class="ans-btn ${state.selectedAns==='false'?(!q.ans?'correct':'wrong'):''}" style="text-align:center;padding:24px;font-size:22px;" onclick="selectTFAnswer(false)">❌<br><span style="font-size:13px;margin-top:6px;display:block;">FALSE</span></button>
+      </div>
+      ${state.selectedAns!==null?`
+      <div class="card" style="background:${(state.selectedAns==='true')===q.ans?'rgba(61,220,132,.1)':'rgba(255,107,107,.1)'};border-color:${(state.selectedAns==='true')===q.ans?'var(--mint)':'var(--coral)'};">
+        <div style="font-size:13px;font-weight:700;color:${(state.selectedAns==='true')===q.ans?'var(--mint)':'var(--coral)'};margin-bottom:6px;">${(state.selectedAns==='true')===q.ans?'✓ Correct!':'✗ Incorrect'}</div>
+        <div style="font-size:12px;color:var(--sub);line-height:1.5;">${q.exp}</div>
+        <button class="btn btn-teal" style="margin-top:12px;" onclick="nextQuestion()">Next →</button>
+      </div>`:''}
+    </div>`;}
+
+  if(state.quizType==='fill'){
+    const q=fillQuestions[state.currentQ % fillQuestions.length];
+    return `
+    <div class="fade-up" style="display:flex;flex-direction:column;gap:14px;">
+      ${quizHeader(state.currentQ+1,total,pct)}
+      <div class="card glow-teal">
+        <div style="font-size:10px;color:var(--teal);font-weight:700;letter-spacing:1px;margin-bottom:10px;">FILL IN THE BLANK</div>
+        <div style="font-size:16px;font-weight:700;line-height:1.6;">${q.q.replace('_______','<span style="border-bottom:2px solid var(--teal);padding:0 20px;color:var(--teal);">_____</span>')}</div>
+      </div>
+      <input class="inp" id="fill-ans" placeholder="Type your answer here…" style="font-size:15px;padding:14px;" onkeydown="if(event.key==='Enter')checkFill()"/>
+      <button class="btn btn-teal btn-full" onclick="checkFill()">Check Answer ✓</button>
+      <div id="fill-feedback"></div>
+    </div>`;}
+
+  const q=questions[qIdx];
+  return `
+  <div class="fade-up" style="display:flex;flex-direction:column;gap:14px;">
+    ${quizHeader(state.currentQ+1,total,pct)}
+    <div class="card glow-teal">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div style="font-size:10px;color:var(--teal);font-weight:700;letter-spacing:1px;">MULTIPLE CHOICE</div>
+        ${state.quizTimer>0?`<div style="display:flex;align-items:center;gap:8px;"><div id="timer-ring" style="width:36px;height:36px;border-radius:50%;background:conic-gradient(var(--teal) 360deg,var(--border) 0deg);display:flex;align-items:center;justify-content:center;"><div style="width:28px;height:28px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;"><span id="quiz-timer" style="font-size:11px;font-weight:800;color:var(--mint);">30s</span></div></div></div>`:''}
+      </div>
+      <div style="font-size:16px;font-weight:700;line-height:1.5;">${q.q}</div>
+    </div>
+    <div>${q.opts.map((opt,i)=>`
+    <button class="ans-btn ${state.selectedAns!==null?(i===q.correct?'correct':(i===state.selectedAns&&state.selectedAns!==q.correct?'wrong':'')):''}" onclick="selectAnswer(${i})">
+      <span style="color:var(--muted);margin-right:10px;">${['A','B','C','D'][i]}.</span>${opt}
+    </button>`).join('')}</div>
+    ${state.selectedAns!==null?`
+    <div class="card" style="background:${state.selectedAns===q.correct?'rgba(61,220,132,.1)':'rgba(255,107,107,.1)'};border-color:${state.selectedAns===q.correct?'var(--mint)':'var(--coral)'};">
+      <div style="font-size:13px;font-weight:700;color:${state.selectedAns===q.correct?'var(--mint)':'var(--coral)'};margin-bottom:6px;">${state.selectedAns===q.correct?'✓ Correct! +50 XP':'✗ Incorrect — added to flashcards'}</div>
+      <div style="font-size:12px;color:var(--sub);line-height:1.5;">${q.exp}</div>
+      <button class="btn btn-teal" style="margin-top:12px;" onclick="nextQuestion()">${state.currentQ<total-1?'Next Question →':'See Results 🏆'}</button>
+    </div>`:''}
+  </div>`;}
+
+function quizHeader(cur,total,pct){
+  return `
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <span style="font-size:12px;color:var(--sub);">Question ${cur} of ${total}</span>
+    <span class="badge" style="background:rgba(61,220,132,.15);color:var(--mint);border:1px solid rgba(61,220,132,.3);">Score: ${state.score}</span>
+  </div>
+  <div class="pbar-wrap" style="height:4px;"><div class="pbar-fill" style="width:${pct}%;height:4px;background:var(--teal);"></div></div>`;}
+
+function selectAnswer(i){
+  if(state.selectedAns!==null) return;
+  clearInterval(quizTimer);
+  state.selectedAns=i;
+  const q=questions[state.currentQ % questions.length];
+  if(i===q.correct){state.score++;state.xp+=50;}
+  render('quiz');
+}
+
+function selectTFAnswer(val){
+  if(state.selectedAns!==null) return;
+  state.selectedAns=val?'true':'false';
+  const q=tfQuestions[state.currentQ % tfQuestions.length];
+  if(val===q.ans){state.score++;state.xp+=50;}
+  render('quiz');
+}
+
+function checkFill(){
+  const inp=$('fill-ans');
+  if(!inp) return;
+  const q=fillQuestions[state.currentQ % fillQuestions.length];
+  const correct=inp.value.trim().toLowerCase()===q.ans.toLowerCase();
+  if(correct){state.score++;state.xp+=50;}
+  const fb=$('fill-feedback');
+  if(fb) fb.innerHTML=`<div class="card" style="background:${correct?'rgba(61,220,132,.1)':'rgba(255,107,107,.1)'};border-color:${correct?'var(--mint)':'var(--coral)'};">
+    <div style="font-size:13px;font-weight:700;color:${correct?'var(--mint)':'var(--coral)'};margin-bottom:6px;">${correct?'✓ Correct!':'✗ Answer: '+q.ans}</div>
+    <div style="font-size:12px;color:var(--sub);">${q.exp}</div>
+    <button class="btn btn-teal" style="margin-top:12px;" onclick="nextQuestion()">Next →</button>
+  </div>`;
+  inp.disabled=true;
+}
+
+function nextQuestion(){
+  const total=Math.min(state.quizCount,questions.length);
+  if(state.currentQ<total-1){
+    state.currentQ++;
+    state.selectedAns=null;
+    render('quiz');
+    if(state.quizTimer>0) startTimer();
+  } else {
+    clearInterval(quizTimer);
+    state.quizStage='result';
+    render('quiz');
+  }
+}
+
+function renderQuizResult(){
+  const total=Math.min(state.quizCount,questions.length);
+  const pct=Math.round((state.score/total)*100);
+  const grade=pct>=90?'A':pct>=80?'B':pct>=70?'C':pct>=60?'D':'F';
+  const msg=pct>=80?'🔥 Excellent mastery!':pct>=60?'👍 Good — review missed topics':'📚 Keep going — you got this!';
+  return `
+  <div class="fade-up" style="display:flex;flex-direction:column;gap:14px;text-align:center;">
+    <div style="font-family:var(--ff-display);font-size:20px;font-weight:900;">Quiz Complete! 🎉</div>
+    <div class="card glow-${pct>=70?'mint':'coral'}" style="padding:32px 20px;">
+      <div style="font-family:var(--ff-display);font-size:72px;font-weight:900;color:var(--${pct>=70?'mint':'coral'});line-height:1;">${pct}%</div>
+      <div style="font-size:16px;font-weight:700;color:var(--sub);margin-top:4px;">Grade: ${grade}</div>
+      <div style="font-size:14px;color:var(--sub);margin-top:6px;">${state.score} of ${total} correct</div>
+      <div style="font-size:13px;font-weight:700;color:${pct>=70?'var(--mint)':'var(--amber)'};margin-top:10px;">${msg}</div>
+      <div style="margin-top:12px;background:rgba(10,191,188,.1);border-radius:10px;padding:10px;">
+        <div style="font-size:11px;color:var(--teal);font-weight:700;">+${state.score*50} XP EARNED 🏆</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <button class="btn btn-ghost" onclick="retryQuiz()">🔄 Retry</button>
+      <button class="btn btn-violet" onclick="navigate('notes',document.querySelectorAll('.nav-btn')[1])">🃏 Flashcards</button>
+    </div>
+    <button class="btn btn-teal btn-full" onclick="showToast('📤 Quiz shared to Study Room!')">📤 Challenge a Friend</button>
+    <button class="btn btn-ghost btn-full" onclick="state.quizStage='upload';render('quiz')">Upload New PDF</button>
+  </div>`;}
+
+function retryQuiz(){state.quizStage='taking';state.currentQ=0;state.score=0;state.selectedAns=null;render('quiz');if(state.quizTimer>0)startTimer();}
+
+// ─── PLANNER ─────────────────────────────────────────────
+function renderPlanner(){
+  const days=['M','T','W','T','F','S','S'];
+  const today=6;
+  const exams=[
+    {name:'Calculus III Midterm',date:'May 6',days:3,color:'amber'},
+    {name:'Organic Chemistry Lab',date:'May 9',days:6,color:'teal'},
+    {name:'World History Essay',date:'May 12',days:9,color:'violet'},
+  ];
+  const remaining=state.tasks.filter(t=>!t.done).length;
+  return `
+  <div class="fade-up" style="display:flex;flex-direction:column;gap:14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-family:var(--ff-display);font-size:20px;font-weight:900;">Planner</div>
+      <button class="btn btn-teal" style="padding:8px 14px;font-size:11px;" onclick="openModal('addTask')">+ Add Task</button>
+    </div>
+
+    <!-- Week strip -->
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;">
+        ${days.map((d,i)=>`
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+          <div style="font-size:10px;color:var(--muted);">${d}</div>
+          <div style="width:36px;height:36px;border-radius:10px;background:${i===today?'var(--teal)':'transparent'};border:1px solid ${i===today?'var(--teal)':'var(--border)'};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:${i===today?'#000':'var(--sub)'};box-shadow:${i===today?'0 0 12px rgba(10,191,188,.4)':'none'};">${i+3}</div>
+          ${[0,2,4].includes(i)?`<div style="width:4px;height:4px;border-radius:50%;background:var(--coral);"></div>`:'<div style="width:4px;height:4px;"></div>'}
+        </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- Tasks -->
+    <div style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:1px;">TODAY'S TASKS — ${remaining} remaining</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      ${state.tasks.map(t=>`
+      <div style="display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;opacity:${t.done?.5:1};transition:.2s;" onclick="toggleTask(${t.id})">
+        <div style="width:22px;height:22px;border-radius:6px;background:${t.done?'rgba(61,220,132,.2)':'transparent'};border:2px solid ${t.done?'var(--mint)':'var(--border)'};display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--mint);flex-shrink:0;cursor:pointer;">${t.done?'✓':''}</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:600;text-decoration:${t.done?'line-through':'none'};color:var(--text);">${t.text}</div>
+          <div style="font-size:11px;color:var(--sub);">⏰ ${t.due}</div>
+        </div>
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--${t.color});box-shadow:0 0 6px var(--${t.color});flex-shrink:0;"></div>
+      </div>`).join('')}
+    </div>
+
+    <!-- Upcoming exams -->
+    <div class="card glow-coral">
+      <div class="sec-lbl">UPCOMING EXAMS</div>
+      ${exams.map((e,i)=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;${i<exams.length-1?'border-bottom:1px solid var(--border)':''}">
+        <div>
+          <div style="font-size:13px;font-weight:600;">${e.name}</div>
+          <div style="font-size:11px;color:var(--sub);">${e.date}</div>
+        </div>
+        <div style="background:rgba(var(--${e.color}-rgb),.15);color:var(--${e.color});border:1px solid rgba(var(--${e.color}-rgb),.3);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:800;">${e.days}d</div>
+      </div>`).join('')}
+    </div>
+
+    <!-- Study block suggestion -->
+    <div class="card" style="background:rgba(10,191,188,.06);border-color:rgba(10,191,188,.25);">
+      <div style="font-size:13px;font-weight:700;margin-bottom:6px;">🧠 AI Study Block Suggestion</div>
+      <div style="font-size:12px;color:var(--sub);line-height:1.5;">Based on your schedule, best study window tonight: <strong style="color:var(--teal)">8:00–10:00 PM</strong> — Calculus III review before tomorrow's quiz.</div>
+      <button class="btn btn-teal" style="margin-top:10px;padding:8px 16px;font-size:11px;" onclick="showToast('📅 Study block added to planner!')">Add to Planner</button>
+    </div>
+  </div>`;}
+
+function toggleTask(id){
+  const t=state.tasks.find(t=>t.id===id);
+  if(t){t.done=!t.done;if(t.done){state.xp+=20;showToast('✓ Task done! +20 XP');}}
+  render('planner');
+}
+
+// ─── STUDY ROOM ──────────────────────────────────────────
+function renderRoom(){
+  if(state.roomPhase==='lobby') return renderRoomLobby();
+  if(state.roomPhase==='call') return renderRoomCall();
+  if(state.roomPhase==='collab') return renderRoomCollab();
+  if(state.roomPhase==='livequiz') return renderRoomLiveQuiz();
+}
+
+function renderRoomLobby(){
+  const rooms=[
+    {name:'Organic Chemistry Final Prep',members:6,max:8,sub:'Chemistry',color:'teal',live:true},
+    {name:'Calc III Study Session',members:3,max:6,sub:'Math',color:'amber',live:true},
+    {name:'CS Algorithms Review',members:9,max:10,sub:'Computer Science',color:'mint',live:false},
+    {name:'World History Discussion',members:4,max:8,sub:'History',color:'violet',live:false},
+  ];
+  return `
+  <div class="fade-up" style="display:flex;flex-direction:column;gap:14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-family:var(--ff-display);font-size:20px;font-weight:900;">Study Rooms</div>
+      <button class="btn btn-violet" style="padding:8px 14px;font-size:11px;" onclick="showToast('🎉 Room created! Share the code: SCH-4821')">+ Create Room</button>
+    </div>
+
+    <div class="card glow-mint">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <span class="live-dot"></span>
+        <span style="font-size:11px;color:var(--mint);font-weight:700;">1,247 students studying worldwide right now</span>
+      </div>
+      <div style="display:flex;gap:-6px;">
+        ${'🧑‍🎓👩‍🎓🧑‍💻👩‍💻🧑‍🔬'.split('').filter(c=>c.trim()).map((e,i)=>`<div style="width:32px;height:32px;border-radius:50%;background:rgba(61,220,132,.15);border:2px solid var(--card);display:flex;align-items:center;justify-content:center;font-size:15px;margin-left:${i>0?'-8px':'0'};">${e}</div>`).join('')}
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--border);border:2px solid var(--card);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--sub);margin-left:-8px;">+1.2k</div>
+      </div>
+    </div>
+
+    ${rooms.map(r=>`
+    <div class="card glow-${r.color}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+        <div>
+          <div style="display:flex;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
+            <span class="badge" style="color:var(--${r.color});background:rgba(var(--${r.color}-rgb),.15);border:1px solid rgba(var(--${r.color}-rgb),.3);">${r.sub}</span>
+            ${r.live?`<span class="badge" style="color:var(--mint);background:rgba(61,220,132,.15);border:1px solid rgba(61,220,132,.3);">● LIVE</span>`:''}
+          </div>
+          <div style="font-size:14px;font-weight:700;">${r.name}</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="flex:1;">
+          <div class="pbar-wrap" style="height:4px;"><div class="pbar-fill" style="width:${(r.members/r.max)*100}%;height:4px;background:var(--${r.color});"></div></div>
+          <div style="font-size:10px;color:var(--muted);margin-top:3px;">${r.members}/${r.max} members</div>
+        </div>
+        <button class="btn" style="background:var(--${r.color});color:#000;padding:8px 16px;font-size:11px;" onclick="joinRoom()">Join →</button>
+      </div>
+    </div>`).join('')}
+  </div>`;}
+
+function joinRoom(){
+  state.roomPhase='call';
+  render('room');
+}
+
+function renderRoomCall(){
+  return `
+  <div class="fade-up" style="display:flex;flex-direction:column;gap:12px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-family:var(--ff-display);font-size:16px;font-weight:900;">Organic Chem Prep</div>
+        <div style="font-size:11px;color:var(--mint);">● Live · 6 members · 42:18</div>
+      </div>
+      <button class="btn" style="background:rgba(255,107,107,.15);color:var(--coral);border:1px solid rgba(255,107,107,.3);font-size:11px;padding:8px 12px;" onclick="leaveCall()">Leave</button>
+    </div>
+
+    <!-- Video grid -->
+    <div class="vid-grid" id="vid-grid">
+      ${[
+        {name:'Alex (You)',em:'🧑‍🎓',speaking:true},
+        {name:'Maria P.',em:'👩‍🎓',speaking:false},
+        {name:'Jae K.',em:'🧑‍💻',speaking:false},
+        {name:'Priya S.',em:'👩‍🔬',speaking:false},
+      ].map(m=>`
+      <div class="vid-cell ${m.speaking?'speaking':''}" id="vid-${m.name.split(' ')[0]}">
+        <div class="avatar">${m.em}</div>
+        <div class="vid-bar">${m.name}${m.speaking?' 🎤':''}</div>
+      </div>`).join('')}
+    </div>
+
+    <!-- Call controls -->
+    <div style="display:flex;justify-content:space-around;background:var(--card);border-radius:16px;padding:12px;">
+      ${[['🎤','Mute'],['📷','Video'],['📺','Share'],['💬','Chat'],['⚡','Quiz'],['🖊️','Collab']].map(([ic,lbl])=>`
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;" onclick="roomAction('${lbl}')">
+        <div style="width:40px;height:40px;border-radius:12px;background:${lbl==='Quiz'?'rgba(10,191,188,.2)':lbl==='Collab'?'rgba(124,92,191,.2)':'var(--navy)'};border:1px solid ${lbl==='Quiz'?'rgba(10,191,188,.4)':lbl==='Collab'?'rgba(124,92,191,.4)':'var(--border)'};display:flex;align-items:center;justify-content:center;font-size:16px;">${ic}</div>
+        <div style="font-size:9px;color:var(--muted);font-weight:600;">${lbl}</div>
+      </div>`).join('')}
+    </div>
+
+    <!-- Chat -->
+    <div class="card" style="max-height:150px;overflow-y:auto;">
+      <div class="sec-lbl">CHAT</div>
+      ${[
+        {name:'Maria',msg:'Can someone explain Walden inversion again?',color:'violet'},
+        {name:'Jae',msg:'It\'s the backside attack — flips stereochemistry completely',color:'mint'},
+        {name:'Priya',msg:'Thanks! Should we do a live quiz on this?',color:'amber'},
+        {name:'Alex',msg:'Yes! Starting one now 🔥',color:'teal'},
+      ].map(c=>`
+      <div style="margin-bottom:8px;">
+        <span style="font-size:11px;font-weight:700;color:var(--${c.color});">${c.name}: </span>
+        <span style="font-size:12px;color:var(--sub);">${c.msg}</span>
+      </div>`).join('')}
+    </div>
+    <div style="display:flex;gap:8px;">
+      <input class="inp" placeholder="Message the group…" style="flex:1;"/>
+      <button class="btn btn-teal" style="padding:10px 14px;" onclick="showToast('Message sent!')">Send</button>
+    </div>
+  </div>`;}
+
+function roomAction(lbl){
+  if(lbl==='Quiz'){state.roomPhase='livequiz';render('room');}
+  else if(lbl==='Collab'){state.roomPhase='collab';render('room');}
+  else if(lbl==='Mute') showToast('🎤 Microphone muted');
+  else if(lbl==='Video') showToast('📷 Camera turned off');
+  else if(lbl==='Share') showToast('📺 Screen sharing started');
+  else if(lbl==='Chat') showToast('💬 Chat panel open');
+}
+
+function leaveCall(){state.roomPhase='lobby';render('room');}
+
+function simulateSpeaking(){
+  const members=['Alex','Maria','Jae','Priya'];
+  let i=0;
+  setInterval(()=>{
+    if(state.roomPhase!=='call') return;
+    members.forEach(m=>{
+      const el=$('vid-'+m);
+      if(el) el.classList.remove('speaking');
+    });
+    const el=$('vid-'+members[i%members.length]);
+    if(el) el.classList.add('speaking');
+    i++;
+  },2500);
+}
+
+function renderRoomCollab(){
+  const tools=[['draw','✏️ Draw'],['text','T Text'],['sticky','📌 Sticky'],['shapes','◻ Shapes'],['mind','⬡ Mind Map'],['formula','∑ Formula']];
+  const colors=['#0ABFBC','#F5A623','#7C5CBF','#3DDC84','#FF6B6B','#3B82F6','#ffffff'];
+  return `
+  <div class="fade-up" style="display:flex;flex-direction:column;gap:12px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-family:var(--ff-display);font-size:16px;font-weight:900;">Collaborative Workspace</div>
+        <div style="font-size:11px;color:var(--mint);">● 6 members editing live</div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-ghost" style="padding:7px 12px;font-size:11px;" onclick="showToast('💾 Saved!')">Save</button>
+        <button class="btn btn-teal" style="padding:7px 12px;font-size:11px;" onclick="showToast('📤 Exported as PDF!')">Export</button>
+      </div>
+    </div>
+
+    <!-- Live cursors indicator -->
+    <div style="display:flex;gap:-4px;align-items:center;">
+      ${'🧑‍🎓👩‍🎓🧑‍💻'.split('').filter(c=>c.trim()).map((e,i)=>`<div style="width:26px;height:26px;border-radius:50%;background:${['rgba(10,191,188,.2)','rgba(245,166,35,.2)','rgba(124,92,191,.2)'][i]};border:2px solid ${['var(--teal)','var(--amber)','var(--violet)'][i]};display:flex;align-items:center;justify-content:center;font-size:13px;margin-left:${i>0?'-6px':'0'};">${e}</div>`).join('')}
+      <span style="font-size:11px;color:var(--sub);margin-left:10px;">+3 others editing</span>
+    </div>
+
+    <!-- Tool switcher -->
+    <div class="tabs">
+      ${tools.map(([v,l])=>`<button class="tab ${state.collabTool===v?'active':''}" onclick="state.collabTool='${v}';render('room')">${l}</button>`).join('')}
+    </div>
+
+    <!-- Canvas -->
+    <div style="position:relative;">
+      <canvas id="collab-canvas"></canvas>
+      <div style="position:absolute;top:8px;left:8px;display:flex;gap:6px;flex-wrap:wrap;">
+        ${colors.map(c=>`<div onclick="state.drawColor='${c}';document.querySelectorAll('.color-dot').forEach(d=>d.style.transform='scale(1)');this.style.transform='scale(1.3)';" class="color-dot" style="width:18px;height:18px;border-radius:50%;background:${c};border:2px solid ${c===state.drawColor?'#fff':'transparent'};cursor:pointer;transition:.2s;"></div>`).join('')}
+      </div>
+      ${state.collabTool==='text'?`
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);">
+        <input class="inp" placeholder="Type here — visible to all…" style="background:rgba(11,17,32,.9);font-size:14px;" onkeydown="if(event.key==='Enter')showToast('✓ Text added to canvas!')"/>
+      </div>`:''}
+      ${state.collabTool==='sticky'?`
+      <div style="position:absolute;top:20px;right:20px;background:#F5A62388;border-radius:4px;padding:10px;width:90px;font-size:11px;color:#000;font-weight:700;">📌 Click anywhere to add sticky note</div>`:''}
+      ${state.collabTool==='mind'?`
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+        <div style="text-align:center;color:var(--sub);font-size:12px;">⬡ Mind Map Tool<br><span style="font-size:10px;">Tap to add nodes · Drag to connect</span></div>
+      </div>`:''}
+      ${state.collabTool==='formula'?`
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(11,17,32,.85);border-radius:14px;">
+        <div style="text-align:center;">
+          <div style="font-size:28px;color:var(--teal);font-family:Georgia;margin-bottom:8px;">∫₀^∞ e^(-x²) dx = √π/2</div>
+          <input class="inp" placeholder="Type LaTeX formula…" style="width:200px;text-align:center;"/>
+        </div>
+      </div>`:''}
+    </div>
+
+    <!-- Collab actions -->
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost" style="flex:1;font-size:11px;" onclick="state.roomPhase='call';render('room')">← Back to Call</button>
+      <button class="btn btn-violet" style="flex:1;font-size:11px;" onclick="showToast('🔗 Share link copied!')">Share Link</button>
+      <button class="btn btn-teal" style="flex:1;font-size:11px;" onclick="state.roomPhase='livequiz';render('room')">⚡ Live Quiz</button>
+    </div>
+  </div>`;}
+
+// Canvas drawing
+function initCanvas(){
+  const canvas=$('collab-canvas');
+  if(!canvas) return;
+  canvas.width=canvas.offsetWidth;
+  canvas.height=220;
+  const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#0d1525';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  // pre-draw some content
+  ctx.strokeStyle='rgba(10,191,188,.4)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(20,110);ctx.bezierCurveTo(80,60,160,160,220,90);ctx.stroke();
+  ctx.strokeStyle='rgba(245,166,35,.4)';
+  ctx.beginPath();ctx.moveTo(230,70);ctx.lineTo(280,150);ctx.lineTo(350,80);ctx.stroke();
+  ctx.fillStyle='rgba(124,92,191,.5)';
+  ctx.font='bold 12px DM Sans';ctx.fillText('SN2 Mechanism',30,30);
+  ctx.fillStyle='rgba(61,220,132,.5)';
+  ctx.font='11px DM Sans';ctx.fillText('Backside attack →',150,140);
+
+  let drawing=false;
+  const getPos=(e)=>{
+    const r=canvas.getBoundingClientRect();
+    const t=e.touches?e.touches[0]:e;
+    return{x:t.clientX-r.left,y:t.clientY-r.top};
+  };
+  const start=(e)=>{e.preventDefault();drawing=true;const p=getPos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.strokeStyle=state.drawColor;ctx.lineWidth=2.5;ctx.lineCap='round';};
+  const move=(e)=>{e.preventDefault();if(!drawing)return;const p=getPos(e);ctx.lineTo(p.x,p.y);ctx.stroke();ctx.beginPath();ctx.moveTo(p.x,p.y);};
+  const end=()=>{drawing=false;};
+  canvas.addEventListener('mousedown',start);canvas.addEventListener('mousemove',move);canvas.addEventListener('mouseup',end);
+  canvas.addEventListener('touchstart',start,{passive:false});canvas.addEventListener('touchmove',move,{passive:false});canvas.addEventListener('touchend',end);
+}
+
+function renderRoomLiveQuiz(){
+  const q=questions[state.liveQuizQ % questions.length];
+  const lb=Object.entries(state.liveScores).sort((a,b)=>b[1]-a[1]);
+  const colors2=['var(--amber)','var(--teal)','var(--violet)','var(--sub)'];
+  const medals=['🥇','🥈','🥉','4️⃣'];
+  return `
+  <div class="fade-up" style="display:flex;flex-direction:column;gap:12px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-family:var(--ff-display);font-size:16px;font-weight:900;">⚡ Live Quiz Battle</div>
+        <div style="font-size:11px;color:var(--coral);">● 6 players competing now</div>
+      </div>
+      <button class="btn btn-ghost" style="padding:7px 12px;font-size:11px;" onclick="state.roomPhase='call';render('room')">End</button>
+    </div>
+
+    <!-- Live leaderboard -->
+    <div class="card glow-amber">
+      <div class="sec-lbl">LIVE LEADERBOARD 🏆</div>
+      ${lb.map(([name,score],i)=>`
+      <div class="lb-row" style="${i===lb.length-1?'border-bottom:none':''}">
+        <div class="lb-rank" style="background:${i===0?'rgba(245,166,35,.2)':i===1?'rgba(10,191,188,.15)':i===2?'rgba(124,92,191,.15)':'var(--navy)'};color:${colors2[i]};">${medals[i]}</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:${name==='Alex'?'700':'500'};color:${name==='Alex'?'var(--teal)':'var(--text)'};">${name}${name==='Alex'?' (You)':''}</div>
+          <div class="pbar-wrap" style="height:3px;margin-top:4px;"><div class="pbar-fill" style="width:${(score/200)*100}%;height:3px;background:${colors2[i]};"></div></div>
+        </div>
+        <div style="font-size:14px;font-weight:800;color:${colors2[i]};">${score}</div>
+      </div>`).join('')}
+    </div>
+
+    <!-- Current question -->
+    <div class="card glow-teal">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:10px;color:var(--teal);font-weight:700;">Q${state.liveQuizQ+1} — ALL PLAYERS ANSWERING</div>
+        <div style="font-size:13px;font-weight:800;color:var(--coral);" id="live-timer">10</div>
+      </div>
+      <div style="font-size:15px;font-weight:700;line-height:1.4;">${q.q}</div>
+    </div>
+    <div>
+      ${q.opts.map((opt,i)=>`
+      <button class="ans-btn ${state.liveAnswered&&i===q.correct?'correct':''}" onclick="liveAnswer(${i},${q.correct})" ${state.liveAnswered?'disabled':''}>
+        <span style="color:var(--muted);margin-right:10px;">${['A','B','C','D'][i]}.</span>${opt}
+      </button>`).join('')}
+    </div>
+    ${state.liveAnswered?`
+    <div class="card glow-mint" style="text-align:center;">
+      <div style="font-size:13px;font-weight:700;color:var(--mint);margin-bottom:8px;">✓ Answered! Waiting for others…</div>
+      <div style="display:flex;justify-content:center;gap:8px;">
+        ${'🧑‍🎓👩‍🎓🧑‍💻'.split('').filter(c=>c.trim()).map(e=>`<span style="font-size:20px;">${e}</span> ✓`).join(' ')}
+      </div>
+      <button class="btn btn-teal" style="margin-top:12px;" onclick="nextLiveQ()">Next Question →</button>
+    </div>`:`
+    <div style="text-align:center;font-size:11px;color:var(--muted);">⏰ Answer before time runs out — first correct = more points!</div>`}
+  </div>`;}
+
+function liveAnswer(selected,correct){
+  if(state.liveAnswered) return;
+  state.liveAnswered=true;
+  if(selected===correct){
+    state.liveScores.Alex+=40;
+    showToast('🔥 Correct! +40 points');
+  } else {
+    showToast('✗ Wrong — other players pull ahead!');
+  }
+  render('room');
+}
+
+function nextLiveQ(){
+  state.liveQuizQ=(state.liveQuizQ+1)%questions.length;
+  state.liveAnswered=false;
+  // randomize others
+  Object.keys(state.liveScores).forEach(k=>{if(k!=='Alex')state.liveScores[k]+=Math.floor(Math.random()*50)+10;});
+  render('room');
+}
+
+// ─── GRADES ──────────────────────────────────────────────
+function renderGrades(){
+  const gpaHist=[3.1,3.3,3.4,3.55,3.65,3.75];
+  const maxH=80;
+  return `
+  <div class="fade-up" style="display:flex;flex-direction:column;gap:14px;">
+    <div style="font-family:var(--ff-display);font-size:20px;font-weight:900;">Grades & GPA</div>
+
+    <!-- GPA hero -->
+    <div class="card glow-mint" style="text-align:center;padding:28px 20px;">
+      <div style="font-size:10px;color:var(--muted);letter-spacing:1px;font-weight:700;margin-bottom:6px;">CUMULATIVE GPA</div>
+      <div style="font-family:var(--ff-display);font-size:68px;font-weight:900;color:var(--mint);line-height:1;">3.75</div>
+      <div style="font-size:13px;color:var(--sub);">out of 4.0 · Dean's List Eligible ⭐</div>
+      <div style="margin-top:10px;"><span class="badge" style="color:var(--mint);background:rgba(61,220,132,.15);border:1px solid rgba(61,220,132,.3);">↑ Up 0.15 this semester</span></div>
+    </div>
+
+    <!-- GPA trend -->
+    <div class="card">
+      <div class="sec-lbl">GPA TREND — LAST 6 SEMESTERS</div>
+      <div class="bar-chart">
+        ${gpaHist.map((g,i)=>`
+        <div class="bar-col">
+          <div class="bar-val" style="color:${i===gpaHist.length-1?'var(--teal)':'var(--muted)'};">${g}</div>
+          <div class="bar" style="height:${(g/4)*maxH}px;background:${i===gpaHist.length-1?'linear-gradient(180deg,var(--teal),var(--mint))':'var(--border)'};${i===gpaHist.length-1?'box-shadow:0 0 10px rgba(10,191,188,.4);':''}"></div>
+          <div class="bar-lbl">S${i+1}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- What-if calculator -->
+    <div class="card" style="background:rgba(245,166,35,.06);border-color:rgba(245,166,35,.25);">
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px;">🧮 What-If Calculator</div>
+      <div style="font-size:12px;color:var(--sub);margin-bottom:8px;">What do I need on my Calculus final to get an A?</div>
+      <div style="background:rgba(245,166,35,.15);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:28px;font-weight:900;color:var(--amber);font-family:var(--ff-display);">87%</div>
+        <div style="font-size:11px;color:var(--sub);">minimum final exam score needed</div>
+      </div>
+      <button class="btn btn-ghost btn-full" style="margin-top:10px;font-size:11px;" onclick="showToast('📊 Calculator opened!')">Calculate for other subjects</button>
+    </div>
+
+    <!-- Per subject -->
+    <div class="sec-lbl">THIS SEMESTER</div>
+    ${state.grades.map(s=>`
+    <div class="card glow-${s.color}" onclick="openModal('gradeDetail')">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;margin-bottom:5px;">${s.sub}</div>
+          <div class="pbar-wrap" style="height:6px;"><div class="pbar-fill" style="width:${(s.gpa/4)*100}%;height:6px;background:var(--${s.color});box-shadow:0 0 8px var(--${s.color});"></div></div>
+        </div>
+        <div style="margin-left:16px;text-align:right;">
+          <div style="font-family:var(--ff-display);font-size:26px;font-weight:900;color:var(--${s.color});">${s.grade}</div>
+          <div style="font-size:10px;font-weight:700;color:${s.trend.startsWith('+')?'var(--mint)':'var(--coral)'};">${s.trend}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        ${s.scores.map((sc,i)=>`
+        <div style="flex:1;height:28px;background:rgba(var(--${s.color}-rgb),.15);border-radius:4px;display:flex;align-items:flex-end;overflow:hidden;">
+          <div style="width:100%;height:${(sc/100)*28}px;background:var(--${s.color});opacity:${.4+i*.15};border-radius:4px 4px 0 0;"></div>
+        </div>`).join('')}
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px;">Last 5 assessments · Tap for full breakdown</div>
+    </div>`).join('')}
+  </div>`;}
+
+// ─── MODALS ──────────────────────────────────────────────
+function renderProfile(){return `
+  <div style="text-align:center;margin-bottom:20px;">
+    <div style="font-size:64px;">🧑‍🎓</div>
+    <div style="font-family:var(--ff-display);font-size:22px;font-weight:900;margin-top:8px;">Alex Rivera</div>
+    <div style="font-size:13px;color:var(--sub);">University of the Philippines · Year 3</div>
+    <div style="margin-top:8px;"><span class="badge" style="color:var(--amber);background:rgba(245,166,35,.15);border:1px solid rgba(245,166,35,.3);">⭐ Senior Scholar</span></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
+    ${[['2,340','XP Points','teal'],['6','Day Streak','amber'],['47','Notes','violet']].map(([v,l,c])=>`
+    <div class="card" style="text-align:center;padding:12px 8px;">
+      <div style="font-family:var(--ff-display);font-size:20px;font-weight:900;color:var(--${c});">${v}</div>
+      <div style="font-size:10px;color:var(--muted);">${l}</div>
+    </div>`).join('')}
+  </div>
+  <div class="sec-lbl">ACHIEVEMENTS</div>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+    ${[['🔥','Streak Master'],['⚡','Quiz Champion'],['🌍','Global Scholar'],['🌙','Night Owl'],['🤝','Team Player']].map(([ic,lbl])=>`
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 12px;display:flex;align-items:center;gap:6px;">
+      <span style="font-size:16px;">${ic}</span><span style="font-size:11px;font-weight:600;">${lbl}</span>
+    </div>`).join('')}
+  </div>
+  <button class="btn btn-ghost btn-full" onclick="closeModal()">Close</button>`;}
+
+function renderAddTask(){return `
+  <div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:16px;">Add New Task</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <input class="inp" placeholder="Task name…" id="new-task-inp"/>
+      <select class="sel"><option>High Priority</option><option>Medium Priority</option><option>Low Priority</option></select>
+      <select class="sel"><option>Today</option><option>Tomorrow</option><option>This Week</option></select>
+      <input class="inp" type="time" value="09:00"/>
+      <button class="btn btn-teal btn-full" onclick="addTask()">Add Task ✓</button>
+      <button class="btn btn-ghost btn-full" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>`;}
+
+function addTask(){
+  const inp=$('new-task-inp');
+  const txt=inp?inp.value.trim():'New Task';
+  if(txt){
+    state.tasks.push({id:Date.now(),text:txt,done:false,priority:'med',due:'Today',color:'teal'});
+    showToast('✓ Task added! +10 XP');
+    state.xp+=10;
+  }
+  closeModal();
+  if(state.screen==='planner') render('planner');
+}
+
+function renderNewNote(){return `
+  <div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:16px;">New Note</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <input class="inp" placeholder="Note title…"/>
+      <select class="sel"><option>Organic Chemistry</option><option>Calculus III</option><option>World History</option><option>Data Structures</option></select>
+      <textarea class="inp" rows="5" placeholder="Start typing your notes here…" style="resize:none;"></textarea>
+      <button class="btn btn-teal btn-full" onclick="showToast('📝 Note saved! Flashcards auto-generated.');closeModal()">Save Note ✓</button>
+      <button class="btn btn-ghost btn-full" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>`;}
+
+// ─── HELPERS ─────────────────────────────────────────────
+function activateTab(btn,parent){
+  document.querySelectorAll(parent+' .tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// CSS variable RGB fallbacks for rgba() usage
+document.documentElement.style.setProperty('--teal-rgb','10,191,188');
+document.documentElement.style.setProperty('--amber-rgb','245,166,35');
+document.documentElement.style.setProperty('--violet-rgb','124,92,191');
+document.documentElement.style.setProperty('--mint-rgb','61,220,132');
+document.documentElement.style.setProperty('--coral-rgb','255,107,107');
+document.documentElement.style.setProperty('--blue-rgb','59,130,246');
+
+// ─── INIT ────────────────────────────────────────────────
+render('home');
+</script>
+</body>
+</html>
